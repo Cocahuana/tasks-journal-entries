@@ -21,6 +21,8 @@ export function TasksScreen() {
   const OPEN_PANE = 1;
   const CLOSE_PANE = 0;
   const HALF_PANE = 0.5;
+  const MIN_SCREEN_SIZE = 200;
+  const MAX_SCREEN_SIZE = 1600;
   const [runTask] = useRunTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
@@ -94,10 +96,10 @@ export function TasksScreen() {
 
   const handleSubmitTask = async (taskData: { title: string; description: string; type: TaskTypeEnum }) => {
     try {
-      await createTask(taskData).unwrap();
       // Close the form after successful submission
-      setIsCreatingTask(false);
+      await createTask(taskData).unwrap();
       // The task will automatically appear in the list due to cache invalidation
+      setIsCreatingTask(false);
     } catch (error) {
       console.error("Failed to create task:", error);
     }
@@ -158,13 +160,13 @@ export function TasksScreen() {
               />
             </ReflexElement>
 
-            <ReflexSplitter className="cursor-col-resize" />
+            <ReflexSplitter className={"cursor-col-resize"} />
 
             <ReflexElement
               className="right-pane"
-              flex={showRightPanel ? detailFlex : 0}
-              minSize={showRightPanel ? 200 : 0}
-              maxSize={showRightPanel ? 1600 : 0}
+              flex={showRightPanel ? detailFlex : CLOSE_PANE}
+              minSize={showRightPanel ? MIN_SCREEN_SIZE : CLOSE_PANE}
+              maxSize={showRightPanel ? MAX_SCREEN_SIZE : CLOSE_PANE}
             >
               {rightPanelContent}
             </ReflexElement>
