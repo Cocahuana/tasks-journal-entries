@@ -54,7 +54,7 @@ export function TaskDetail(props: Props) {
               <h5 className="font-medium mb-2">Line Items</h5>
               <Table aria-label="Journal entry line items">
                 <TableHeader>
-                  <Column width="25%">Account</Column>
+                  <Column isRowHeader width="25%">Account</Column>
                   <Column width="25%">Memo</Column>
                   <Column width="25%">Debit</Column>
                   <Column width="25%">Credit</Column>
@@ -115,7 +115,7 @@ export function TaskDetail(props: Props) {
                 <h5 className="font-medium mb-2">Line Items to be Reversed</h5>
                 <Table aria-label="Journal entry line items to be reversed">
                   <TableHeader>
-                    <Column width="30%">Account</Column>
+                    <Column isRowHeader width="30%">Account</Column>
                     <Column width="25%">Debit</Column>
                     <Column width="25%">Credit</Column>
                   </TableHeader>

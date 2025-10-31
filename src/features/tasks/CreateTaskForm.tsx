@@ -4,6 +4,7 @@ import { Button } from "../../components/ui";
 import { TextField, Label } from "../../components/ui/Input";
 import { TaskType } from "../../types";
 import { ListBoxItem } from "react-aria-components";
+import { TASK_TYPE_OPTIONS } from "./taskTypeOptions";
 // Create a TextArea component since we don't have one
 import { TextArea as AriaTextArea } from "react-aria-components";
 import { tv } from "tailwind-variants";
@@ -170,15 +171,11 @@ export function CreateTaskForm({ onClose, onSubmit, isSubmitting = false }: Crea
             errorMessage={errors.type}
             isRequired
           >
-            <ListBoxItem id={TaskType.POST_JOURNAL_ENTRY}>
-              Post Journal Entry
-            </ListBoxItem>
-            <ListBoxItem id={TaskType.REVERSE_JOURNAL_ENTRY}>
-              Reverse Journal Entry
-            </ListBoxItem>
-            <ListBoxItem id={TaskType.OTHER}>
-              Other
-            </ListBoxItem>
+            {TASK_TYPE_OPTIONS.map((option) => (
+              <ListBoxItem key={option.id} id={option.id}>
+                {option.label}
+              </ListBoxItem>
+            ))}
           </Select>
           
           <div className="flex gap-2 pt-4">

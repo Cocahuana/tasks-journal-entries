@@ -45,7 +45,7 @@ export function JournalEntryCard({ entry }: JournalEntryCardProps) {
         </h4>
         <Table aria-label={`Line items for ${entry.entryNumber}`}>
           <TableHeader>
-            <Column width="35%">Account</Column>
+            <Column isRowHeader width="35%">Account</Column>
             <Column width="30%">Memo</Column>
             <Column width="17.5%">Debit</Column>
             <Column width="17.5%">Credit</Column>

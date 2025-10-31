@@ -101,6 +101,19 @@ export const tasksApi = createApi({
               taskWithAction,
               ...tasks.slice(currentTaskIndex + 1),
             ];
+          } else if (currentTask.type === TaskType.OTHER) {
+            // OTHER tasks go directly to COMPLETED with no proposed action
+            const completedTask = {
+              ...currentTask,
+              status: TaskStatus.COMPLETED,
+              lastRunAt: new Date().toISOString(),
+            };
+
+            tasks = [
+              ...tasks.slice(0, currentTaskIndex),
+              completedTask,
+              ...tasks.slice(currentTaskIndex + 1),
+            ];
           }
         }, 5000);
 
