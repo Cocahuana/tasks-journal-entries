@@ -1,4 +1,3 @@
-// TaskDetail.tsx
 import type { Task } from '../../types';
 import { TaskStatus } from '../../types';
 import { Close } from "flowbite-react-icons/outline";
@@ -74,16 +73,16 @@ export function TaskDetail(props: Props) {
             </div>
 
             <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex justify-between items-center sm:flex flex-col sm:center sm:items-center sm:gap-2 sm:py-2">
-                <div className='sm:flex sm:items-center sm:justify-center'>
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 flex-wrap">
+                <div>
                   <span className="font-medium">Total Debits: </span>
                   <span>{formatCurrency(totalDebits)}</span>
                 </div>
-                <div className='sm:flex sm:items-center sm:justify-center'>
+                <div>
                   <span className="font-medium">Total Credits: </span>
                   <span>{formatCurrency(totalCredits)}</span>
                 </div>
-                <div className={`sm:flex px-3 py-1 rounded-full text-sm font-medium ${
+                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                   isBalanced 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
