@@ -22,9 +22,9 @@ import { tv } from "tailwind-variants";
 // Table Variants
 const tableStyles = tv({
   slots: {
-    root: "w-full border border-gray-300 rounded-md ",
+    root: "w-full border border-gray-300 rounded-md min-w-[50rem] overflow-x-auto overflow-y-hidden",
     container: "overflow-x-auto overflow-y-hidden",
-    table: "w-full border-collapse min-w-[50rem]",
+    table: "w-full border-collapse",
     header: "bg-gray-50 border-b border-gray-300",
     headerRow: "",
     column: [
@@ -33,7 +33,7 @@ const tableStyles = tv({
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-inset",
     ],
     columnSortable: "cursor-pointer hover:bg-gray-100 transition-colors",
-    body: "bg-white divide-y divide-gray-200",
+    body: "bg-white divide-y divide-gray-200 ",
     row: [
       "hover:bg-gray-50 transition-colors cursor-pointer",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-inset",
