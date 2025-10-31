@@ -61,7 +61,7 @@ export function TasksScreen() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="h-full w-full flex flex-col bg-white">
       <PageHeader
         title="Tasks"
         description="Manage journal entry automation tasks"
