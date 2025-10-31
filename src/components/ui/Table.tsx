@@ -24,7 +24,7 @@ const tableStyles = tv({
   slots: {
     root: "w-full border border-gray-300 rounded-md ",
     container: "overflow-x-auto overflow-y-hidden",
-    table: "w-full border-collapse",
+    table: "w-full border-collapse min-w-[50rem]",
     header: "bg-gray-50 border-b border-gray-300",
     headerRow: "",
     column: [
