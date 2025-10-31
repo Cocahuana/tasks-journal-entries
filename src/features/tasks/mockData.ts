@@ -42,7 +42,7 @@ export const INITIAL_TASKS: Task[] = [
     type: TaskType.REVERSE_JOURNAL_ENTRY,
     status: TaskStatus.PENDING_ACTION,
     proposedAction: {
-      journalEntryId: "je-999",
+      journalEntryId: "je-999", //we fake this ID to simulate an error case
     },
     lastRunAt: "2024-10-18T16:45:00Z",
     createdAt: "2024-10-18T16:45:00Z",

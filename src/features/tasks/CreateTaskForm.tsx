@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Close } from "flowbite-react-icons/outline";
-import { Button } from "../../components/ui";
+import { Button, Select, SelectItem } from "../../components/ui";
 import { TextField, Label } from "../../components/ui/Input";
 import { TaskType } from "../../types";
-import { ListBoxItem } from "react-aria-components";
 import { TASK_TYPE_OPTIONS } from "./taskTypeOptions";
 // Create a TextArea component since we don't have one
 import { TextArea as AriaTextArea } from "react-aria-components";
@@ -42,51 +41,6 @@ const TextArea = ({ label, description, errorMessage, ...props }: TextAreaProps)
   );
 };
 
-// Create a Select component using your existing patterns
-import { Select as AriaSelect, SelectValue, Button as AriaButton, ListBox } from "react-aria-components";
-import { ChevronDown } from "flowbite-react-icons/outline";
-
-const selectStyles = tv({
-  base: [
-    "w-full px-3 py-2 rounded-md border border-gray-300 bg-white",
-    "text-sm text-gray-900",
-    "focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent",
-    "disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed",
-    "transition-colors",
-    "flex items-center justify-between",
-  ],
-  variants: {
-    isInvalid: {
-      true: "border-red-500 focus:ring-red-500",
-    },
-  },
-});
-
-interface SelectProps extends React.ComponentProps<typeof AriaSelect> {
-  label?: string;
-  description?: string;
-  errorMessage?: string;
-  children: React.ReactNode;
-}
-
-const Select = ({ label, description, errorMessage, children, ...props }: SelectProps) => {
-  return (
-    <div className="flex flex-col gap-1">
-      {label && <Label>{label}</Label>}
-      <AriaSelect {...props}>
-        <AriaButton className={selectStyles()}>
-          <SelectValue />
-          <ChevronDown className="w-4 h-4" />
-        </AriaButton>
-        {description && <div className="text-xs text-gray-500">{description}</div>}
-        {errorMessage && <div className="text-xs text-red-600">{errorMessage}</div>}
-        <ListBox className="border border-gray-300 rounded-md shadow-lg bg-white mt-1 max-h-60 overflow-auto">
-          {children}
-        </ListBox>
-      </AriaSelect>
-    </div>
-  );
-};
 
 interface CreateTaskFormProps {
   onClose: () => void;
@@ -164,19 +118,21 @@ export function CreateTaskForm({ onClose, onSubmit, isSubmitting = false }: Crea
             rows={3}
           />
           
-          <Select
-            label="Type"
-            key={formData.type}
-            onChange={(value) => handleChange('type', value as string)}
-            errorMessage={errors.type}
-            isRequired
-          >
-            {TASK_TYPE_OPTIONS.map((option) => (
-              <ListBoxItem key={option.id} id={option.id}>
-                {option.label}
-              </ListBoxItem>
-            ))}
-          </Select>
+          <div className="flex flex-col gap-1">
+            <Select
+              label="Type"
+              selectedKey={formData.type}
+              onSelectionChange={(key) => handleChange('type', key as string)}
+              isRequired
+            >
+              {TASK_TYPE_OPTIONS.map((option) => (
+                <SelectItem key={option.id} id={option.id}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </Select>
+            {errors.type && <div className="text-xs text-red-600">{errors.type}</div>}
+          </div>
           
           <div className="flex gap-2 pt-4">
             <Button 

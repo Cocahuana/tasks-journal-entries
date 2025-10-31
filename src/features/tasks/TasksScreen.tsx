@@ -18,22 +18,25 @@ export function TasksScreen() {
   const { data: tasks = [], isLoading } = useGetTasksQuery(undefined, {
     pollingInterval: 1000,
   });
+  const OPEN_PANE = 1;
+  const CLOSE_PANE = 0;
+  const HALF_PANE = 0.5;
   const [runTask] = useRunTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
   
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
-  const [tableFlex, setTableFlex] = useState(1);
-  const [detailFlex, setDetailFlex] = useState(0);
+  const [tableFlex, setTableFlex] = useState(OPEN_PANE);
+  const [detailFlex, setDetailFlex] = useState(CLOSE_PANE);
 
   const handleSplitterBehavior = (isResizing: boolean) => {
     if (!isResizing) {
-      setTableFlex(1);
-      setDetailFlex(0);
+      setTableFlex(OPEN_PANE);
+      setDetailFlex(CLOSE_PANE);
     } else {
-      setTableFlex(0.5);
-      setDetailFlex(0.5);
+      setTableFlex(HALF_PANE);
+      setDetailFlex(HALF_PANE);
     }
   };
 
@@ -53,7 +56,7 @@ export function TasksScreen() {
         setSelectedTask(null);
       }
     }
-  }, [tasks, selectedTask?.id]);
+  }, [tasks, selectedTask?.id, isCreatingTask, selectedTask]);
 
   const handleRunTask = async (taskId: string) => {
     try {
