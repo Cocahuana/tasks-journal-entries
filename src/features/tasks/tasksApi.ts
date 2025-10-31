@@ -7,6 +7,7 @@ import {
   type ReverseJournalEntryTask,
 } from "../../types";
 import { SAMPLE_PROPOSED_ENTRY } from "./mockData";
+import { getJournalEntries } from "../../store/api/journalEntriesApi";
 
 let tasks: Task[] = [];
 
@@ -66,7 +67,7 @@ export const tasksApi = createApi({
             const taskWithAction: PostJournalEntryTask = {
               ...currentTask,
               proposedAction: SAMPLE_PROPOSED_ENTRY,
-              status: TaskStatus.COMPLETED,
+              status: TaskStatus.PENDING_ACTION,
               lastRunAt: new Date().toISOString(),
             } as PostJournalEntryTask;
 
@@ -75,16 +76,22 @@ export const tasksApi = createApi({
               taskWithAction,
               ...tasks.slice(currentTaskIndex + 1),
             ];
-
-            // TODO: Post to journal entries
           } else if (currentTask.type === TaskType.REVERSE_JOURNAL_ENTRY) {
+            // Get a random journal entry id from the existing entries
+            const availableEntries = getJournalEntries();
+            let journalEntryId = "je-001"; // Default fallback
+            
+            if (availableEntries.length > 0) {
+              const randomIndex = Math.floor(Math.random() * availableEntries.length);
+              journalEntryId = availableEntries[randomIndex].id;
+            }
+
             const taskWithAction: ReverseJournalEntryTask = {
               ...currentTask,
               proposedAction: {
-                // TODO: Get a random journal entry id from the journal entries
-                journalEntryId: "je-001",
+                journalEntryId,
               },
-              status: TaskStatus.COMPLETED,
+              status: TaskStatus.PENDING_ACTION,
               lastRunAt: new Date().toISOString(),
             } as ReverseJournalEntryTask;
 
@@ -93,8 +100,6 @@ export const tasksApi = createApi({
               taskWithAction,
               ...tasks.slice(currentTaskIndex + 1),
             ];
-
-            // TODO: Remove from journal entries
           }
         }, 5000);
 
@@ -112,6 +117,31 @@ export const tasksApi = createApi({
       },
       invalidatesTags: ["Task"],
     }),
+
+    completeTask: builder.mutation<Task, string>({
+      queryFn: async (taskId) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        
+        const taskIndex = tasks.findIndex((t) => t.id === taskId);
+        if (taskIndex === -1) {
+          return { error: { status: 404, data: "Task not found" } };
+        }
+
+        const updatedTask = {
+          ...tasks[taskIndex],
+          status: TaskStatus.COMPLETED,
+        };
+
+        tasks = [
+          ...tasks.slice(0, taskIndex),
+          updatedTask,
+          ...tasks.slice(taskIndex + 1),
+        ];
+
+        return { data: updatedTask };
+      },
+      invalidatesTags: ["Task"],
+    }),
   }),
 });
 
@@ -119,5 +149,5 @@ export const initializeTasks = (initialTasks: Task[]) => {
   tasks = [...initialTasks];
 };
 
-export const { useGetTasksQuery, useRunTaskMutation, useDeleteTaskMutation, useCreateTaskMutation } =
+export const { useGetTasksQuery, useRunTaskMutation, useDeleteTaskMutation, useCreateTaskMutation, useCompleteTaskMutation } =
   tasksApi;

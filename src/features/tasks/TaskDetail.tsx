@@ -3,7 +3,8 @@ import type { Task } from '../../types';
 import { TaskStatus } from '../../types';
 import { Close } from "flowbite-react-icons/outline";
 import { Table, TableHeader, TableBody, Row, Cell, Column } from '../../components/ui';
-import { useRunTaskMutation } from './tasksApi';
+import { useRunTaskMutation, useCompleteTaskMutation } from './tasksApi';
+import { useCreateJournalEntryMutation, useDeleteJournalEntryMutation, useGetJournalEntriesQuery } from '../../store/api/journalEntriesApi';
 import { calculateTotals, formatCurrency, isPostJournalEntryTask, isReverseJournalEntryTask, canExecuteAction } from './taskHelpers';
 import { TaskDetailItem } from './TaskDetailItem';
 
@@ -15,16 +16,37 @@ type Props = {
 export function TaskDetail(props: Props) {
   const { task, handleClosePanel } = props;
   const [runTask, { isLoading: isRunning }] = useRunTaskMutation();
+  const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
+  const [createJournalEntry, { isLoading: isCreatingEntry }] = useCreateJournalEntryMutation();
+  const [deleteJournalEntry, { isLoading: isDeletingEntry }] = useDeleteJournalEntryMutation();
+  const { data: journalEntries = [] } = useGetJournalEntriesQuery();
 
   const lastRunAt = task.lastRunAt ? new Date(task.lastRunAt).toLocaleString() : "Never";
   const createdAt = new Date(task.createdAt).toLocaleString();
 
-  const handleExecuteAction = async () => {
+  const handleRunTask = async () => {
     try {
       await runTask(task.id).unwrap();
       // The task will be updated via Redux and the proposed action will be set
     } catch (error) {
-      console.error('Failed to execute task:', error);
+      console.error('Failed to run task:', error);
+    }
+  };
+
+  const handleExecuteAction = async () => {
+    try {
+      if (isPostJournalEntryTask(task) && task.proposedAction) {
+        // Create the journal entry
+        await createJournalEntry(task.proposedAction).unwrap();
+      } else if (isReverseJournalEntryTask(task) && task.proposedAction) {
+        // Delete the journal entry
+        await deleteJournalEntry(task.proposedAction.journalEntryId).unwrap();
+      }
+      
+      // Mark the task as completed
+      await completeTask(task.id).unwrap();
+    } catch (error) {
+      console.error('Failed to execute action:', error);
     }
   };
 
@@ -87,16 +109,53 @@ export function TaskDetail(props: Props) {
 
     // Use type guard and explicitly check proposedAction exists
     if (isReverseJournalEntryTask(task) && task.proposedAction) {
+      const entryToReverse = journalEntries.find(
+        (entry) => entry.id === task.proposedAction.journalEntryId
+      );
+
       return (
         <div className="mt-4 p-4 border border-gray-200 rounded-lg">
           <h4 className="font-semibold text-lg mb-3">Reverse Journal Entry</h4>
-          <TaskDetailItem 
-            label="Journal Entry ID" 
-            value={task.proposedAction.journalEntryId} 
-          />
-          <p className="text-sm text-gray-600 mt-2">
-            This action will reverse the specified journal entry.
-          </p>
+          {entryToReverse ? (
+            <>
+              <TaskDetailItem label="Entry Number" value={entryToReverse.entryNumber} />
+              <TaskDetailItem label="Date" value={new Date(entryToReverse.date).toLocaleDateString()} />
+              <TaskDetailItem label="Description" value={entryToReverse.description || '-'} />
+              
+              <div className="mt-3">
+                <h5 className="font-medium mb-2">Line Items to be Reversed</h5>
+                <Table aria-label="Journal entry line items to be reversed">
+                  <TableHeader>
+                    <Column width="30%">Account</Column>
+                    <Column width="25%">Debit</Column>
+                    <Column width="25%">Credit</Column>
+                  </TableHeader>
+                  <TableBody>
+                    {entryToReverse.lineItems.map((item, index) => (
+                      <Row key={item.id || index}>
+                        <Cell>{item.account}</Cell>
+                        <Cell>{item.debit > 0 ? formatCurrency(item.debit) : '-'}</Cell>
+                        <Cell>{item.credit > 0 ? formatCurrency(item.credit) : '-'}</Cell>
+                      </Row>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <p className="text-sm text-gray-600 mt-3">
+                This action will delete the specified journal entry.
+              </p>
+            </>
+          ) : (
+            <>
+              <TaskDetailItem 
+                label="Journal Entry ID" 
+                value={task.proposedAction.journalEntryId} 
+              />
+              <p className="text-sm text-red-600 mt-2">
+                Warning: Journal entry not found in the system.
+              </p>
+            </>
+          )}
         </div>
       );
     }
@@ -104,7 +163,9 @@ export function TaskDetail(props: Props) {
     return null;
   };
 
-  const showExecuteButton = canExecuteAction(task) && task.status === TaskStatus.PENDING_RUN;
+  const showRunButton = task.status === TaskStatus.PENDING_RUN;
+  const showExecuteButton = canExecuteAction(task) && task.status === TaskStatus.PENDING_ACTION;
+  const isExecuting = isCreatingEntry || isDeletingEntry || isCompleting;
 
   return (
     <div className="h-full border-l border-gray-300 bg-white overflow-auto">
@@ -137,10 +198,10 @@ export function TaskDetail(props: Props) {
           
           {task.proposedAction && renderProposedAction()}
 
-          {showExecuteButton && (
+          {showRunButton && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <button
-                onClick={handleExecuteAction}
+                onClick={handleRunTask}
                 disabled={isRunning}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
               >
@@ -148,6 +209,23 @@ export function TaskDetail(props: Props) {
               </button>
               <p className="text-sm text-gray-600 mt-2">
                 Run this task to generate the proposed action that you can then execute.
+              </p>
+            </div>
+          )}
+
+          {showExecuteButton && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={handleExecuteAction}
+                disabled={isExecuting}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isExecuting ? 'Executing Action...' : 'Execute Action'}
+              </button>
+              <p className="text-sm text-gray-600 mt-2">
+                {isPostJournalEntryTask(task) 
+                  ? 'This will post the journal entry and mark the task as completed.' 
+                  : 'This will reverse the journal entry and mark the task as completed.'}
               </p>
             </div>
           )}
