@@ -3,7 +3,7 @@ import type { Task } from '../../types';
 import { TaskStatus } from '../../types';
 import { Close } from "flowbite-react-icons/outline";
 import { Table, TableHeader, TableBody, Row, Cell, Column, Button } from '../../components/ui';
-import { useRunTaskMutation, useCompleteTaskMutation } from './tasksApi';
+import { useCompleteTaskMutation } from './tasksApi';
 import { useCreateJournalEntryMutation, useDeleteJournalEntryMutation, useGetJournalEntriesQuery } from '../../store/api/journalEntriesApi';
 import { calculateTotals, formatCurrency, isPostJournalEntryTask, isReverseJournalEntryTask, canExecuteAction } from './taskHelpers';
 import { TaskDetailItem } from './TaskDetailItem';
@@ -15,7 +15,6 @@ type Props = {
 
 export function TaskDetail(props: Props) {
   const { task, handleClosePanel } = props;
-  const [runTask, { isLoading: isRunning }] = useRunTaskMutation();
   const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
   const [createJournalEntry, { isLoading: isCreatingEntry }] = useCreateJournalEntryMutation();
   const [deleteJournalEntry, { isLoading: isDeletingEntry }] = useDeleteJournalEntryMutation();
@@ -23,15 +22,6 @@ export function TaskDetail(props: Props) {
 
   const lastRunAt = task.lastRunAt ? new Date(task.lastRunAt).toLocaleString() : "Never";
   const createdAt = new Date(task.createdAt).toLocaleString();
-
-  const handleRunTask = async () => {
-    try {
-      await runTask(task.id).unwrap();
-      // The task will be updated via Redux and the proposed action will be set
-    } catch (error) {
-      console.error('Failed to run task:', error);
-    }
-  };
 
   const handleExecuteAction = async () => {
     try {
@@ -163,7 +153,6 @@ export function TaskDetail(props: Props) {
     return null;
   };
 
-  const showRunButton = task.status === TaskStatus.PENDING_RUN;
   const showExecuteButton = canExecuteAction(task) && task.status === TaskStatus.PENDING_ACTION;
   const isExecuting = isCreatingEntry || isDeletingEntry || isCompleting;
 
@@ -210,22 +199,6 @@ export function TaskDetail(props: Props) {
           )}
           
           {task.proposedAction && renderProposedAction()}
-
-          {showRunButton && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <Button
-                onPress={handleRunTask}
-                isDisabled={isRunning}
-                variant="primary"
-                size="md"
-              >
-                {isRunning ? 'Running Task...' : 'Run Task to Generate Action'}
-              </Button>
-              <p className="text-sm text-gray-600 mt-2">
-                Run this task to generate the proposed action that you can then execute.
-              </p>
-            </div>
-          )}
 
           {showExecuteButton && (
             <div className="mt-6 pt-4 border-t border-gray-200">
