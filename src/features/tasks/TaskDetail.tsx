@@ -167,6 +167,19 @@ export function TaskDetail(props: Props) {
   const showExecuteButton = canExecuteAction(task) && task.status === TaskStatus.PENDING_ACTION;
   const isExecuting = isCreatingEntry || isDeletingEntry || isCompleting;
 
+  // Check if journal entry exists for REVERSE tasks
+  const canExecuteReversalAction = () => {
+    if (isReverseJournalEntryTask(task) && task.proposedAction) {
+      const entryExists = journalEntries.some(
+        (entry) => entry.id === task.proposedAction.journalEntryId
+      );
+      return entryExists;
+    }
+    return true; // For POST tasks, always allow execution
+  };
+
+  const shouldDisableExecuteButton = isExecuting || !canExecuteReversalAction();
+
   return (
     <div className="h-full border-l border-gray-300 bg-white overflow-auto">
       <div className="p-4 border-b border-gray-300 flex items-center justify-between">
@@ -217,16 +230,22 @@ export function TaskDetail(props: Props) {
             <div className="mt-6 pt-4 border-t border-gray-200">
               <button
                 onClick={handleExecuteAction}
-                disabled={isExecuting}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors"
+                disabled={shouldDisableExecuteButton}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {isExecuting ? 'Executing Action...' : 'Execute Action'}
               </button>
-              <p className="text-sm text-gray-600 mt-2">
-                {isPostJournalEntryTask(task) 
-                  ? 'This will post the journal entry and mark the task as completed.' 
-                  : 'This will reverse the journal entry and mark the task as completed.'}
-              </p>
+              {!canExecuteReversalAction() ? (
+                <p className="text-sm text-red-600 mt-2">
+                  ⚠️ Cannot execute: The journal entry does not exist in the system. It may have been deleted already.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600 mt-2">
+                  {isPostJournalEntryTask(task) 
+                    ? 'This will post the journal entry and mark the task as completed.' 
+                    : 'This will delete the journal entry and mark the task as completed.'}
+                </p>
+              )}
             </div>
           )}
 
