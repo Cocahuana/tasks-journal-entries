@@ -21,7 +21,18 @@ export function TasksScreen() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tableFlex, setTableFlex] = useState(1);
   const [detailFlex, setDetailFlex] = useState(0);
-
+const handleSplitterBehavior = (isResizing: boolean) => {
+  // if no task is selected, left-pane should be full size in width
+  if (!isResizing) {
+    setTableFlex(1);
+    setDetailFlex(0);
+  } else {
+    // if a task is selected, right-pane should be full width 
+    // // but if the user drags the splitter, they can adjust the width of both panes
+    setTableFlex(0);
+    setDetailFlex(1);
+  }
+};
 useEffect(() => {
   handleSplitterBehavior(!!selectedTask);
 }, [selectedTask]);
@@ -74,18 +85,7 @@ const emptyStateMessage = (
   />
 );
 
-const handleSplitterBehavior = (isResizing: boolean) => {
-  // if no task is selected, left-pane should be full size in width
-  if (!isResizing) {
-    setTableFlex(1);
-    setDetailFlex(0);
-  } else {
-    // if a task is selected, right-pane should be full width 
-    // // but if the user drags the splitter, they can adjust the width of both panes
-    setTableFlex(0);
-    setDetailFlex(1);
-  }
-};
+
 
   return (
     <div className="h-full w-full flex flex-col">
