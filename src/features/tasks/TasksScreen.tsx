@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import "react-reflex/styles.css";
-import { Close } from "flowbite-react-icons/outline";
 import { PageHeader, PageContent } from "../../components/layout";
-import { Button, EmptyState } from "../../components/ui";
+import { Button } from "../../components/ui";
 import { TaskTable } from "./TaskTable";
 import {
   useGetTasksQuery,
@@ -11,7 +10,7 @@ import {
   useDeleteTaskMutation,
 } from "./tasksApi";
 import type { Task } from "../../types";
-
+import { TaskDetail } from "./TaskDetail";
 export function TasksScreen() {
   const { data: tasks = [], isLoading } = useGetTasksQuery(undefined, {
     pollingInterval: 1000,
@@ -77,9 +76,9 @@ export function TasksScreen() {
         }
       />
       <PageContent>
-        {tasks.length > 0 ? (
-          <ReflexContainer orientation="vertical" className="h-full w-full min-w-0">
-            <ReflexElement className="left-pane" minSize={400}>
+         {tasks.length > 0 ? (
+          <ReflexContainer orientation="vertical" >
+            <ReflexElement className="left-pane" minSize={10}>
               <TaskTable
                 tasks={tasks}
                 onRunTask={handleRunTask}
@@ -88,71 +87,15 @@ export function TasksScreen() {
               />
             </ReflexElement>
 
-            {selectedTask && (
-              <>
-                <ReflexSplitter />
-                <ReflexElement className="right-pane" minSize={300} flex={0.4}>
-                  <div className="h-full border-l border-gray-300 bg-white overflow-auto">
-                    <div className="p-4 border-b border-gray-300 flex items-center justify-between">
-                      <h2 className="text-lg font-semibold">Task Details</h2>
-                      <button
-                        onClick={handleClosePanel}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        <Close className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-base font-semibold mb-2">
-                        {selectedTask.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        {selectedTask.description}
-                      </p>
-                      <div className="space-y-2 text-sm">
-                        <div>
-                          <span className="font-medium">Status: </span>
-                          <span>{selectedTask.status}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium">Type: </span>
-                          <span>{selectedTask.type}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium">Created: </span>
-                          <span>
-                            {new Date(selectedTask.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        {selectedTask.lastRunAt && (
-                          <div>
-                            <span className="font-medium">Last Run: </span>
-                            <span>
-                              {new Date(
-                                selectedTask.lastRunAt
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                        )}
-                        {selectedTask.lastRunError && (
-                          <div className="text-red-600">
-                            <span className="font-medium">Error: </span>
-                            <span>{selectedTask.lastRunError}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </ReflexElement>
-              </>
-            )}
+            <ReflexSplitter  className="bg-gray-200 cursor-col-resize" />
+            <ReflexElement className="right-pane" maxSize={selectedTask ? 800 : 0} minSize={selectedTask ? 10 : 0}>
+              {selectedTask && (
+                  <TaskDetail task={selectedTask} handleClosePanel={handleClosePanel} />
+              )}
+            </ReflexElement>
           </ReflexContainer>
         ) : (
-          <EmptyState
-            title="No tasks found"
-            description="Create your first task to automate journal entry posting and reversals"
-            action={<Button onPress={handleCreateTask}>Create Task</Button>}
-          />
+          <></>
         )}
       </PageContent>
     </div>
