@@ -22,7 +22,7 @@ import { tv } from "tailwind-variants";
 // Table Variants
 const tableStyles = tv({
   slots: {
-    root: "w-full border border-gray-300 rounded-md min-w-[50rem] overflow-x-auto overflow-y-hidden",
+    root: "w-full border border-gray-300 rounded-md overflow-x-auto",
     container: "overflow-x-auto overflow-y-hidden",
     table: "w-full border-collapse",
     header: "bg-gray-50 border-b border-gray-300",

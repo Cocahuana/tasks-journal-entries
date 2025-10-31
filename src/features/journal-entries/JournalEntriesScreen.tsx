@@ -22,10 +22,13 @@ export const JournalEntriesScreen = () => {
       />
       <PageContent>
         {journalEntries.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 pb-6">
+          <div className="grid grid-cols-1 gap-4 pb-6">
             {journalEntries
               .slice()
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .sort((a, b) => {
+                // Sort by entry number (ascending: JE-001, JE-002, etc.)
+                return a.entryNumber.localeCompare(b.entryNumber, undefined, { numeric: true });
+              })
               .map((entry) => (
                 <JournalEntryCard key={entry.id} entry={entry} />
               ))}
