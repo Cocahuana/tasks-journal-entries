@@ -58,6 +58,6 @@ export const SAMPLE_PROPOSED_ENTRY: ProposedJournalEntry = {
       debit: 0,
       credit: 10000,
       memo: "Sample credit",
-    },
+    }
   ],
 };

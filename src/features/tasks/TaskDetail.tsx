@@ -1,10 +1,12 @@
+// TaskDetail.tsx
 import type { Task } from '../../types';
-import {  TaskStatus } from '../../types';
+import { TaskStatus } from '../../types';
 import { Close } from "flowbite-react-icons/outline";
 import { Table, TableHeader, TableBody, Row, Cell, Column } from '../../components/ui';
 import { useRunTaskMutation } from './tasksApi';
-import { TaskDetailItem } from './TaskDetailItem';
 import { calculateTotals, formatCurrency, isPostJournalEntryTask, isReverseJournalEntryTask, canExecuteAction } from './taskHelpers';
+import { TaskDetailItem } from './TaskDetailItem';
+
 type Props = {
   task: Task;
   handleClosePanel: () => void;
@@ -27,7 +29,7 @@ export function TaskDetail(props: Props) {
   };
 
   const renderProposedAction = () => {
-    if (isPostJournalEntryTask(task)) {
+    if (isPostJournalEntryTask(task) && task.proposedAction && task.proposedAction.lineItems) {
       const { totalDebits, totalCredits, isBalanced } = calculateTotals(task.proposedAction.lineItems);
       
       return (
@@ -47,7 +49,7 @@ export function TaskDetail(props: Props) {
                   <Column width="25%">Credit</Column>
                 </TableHeader>
                 <TableBody>
-                  {task.proposedAction.lineItems.map((item, index) => (
+                  { task.proposedAction.lineItems.map((item, index) => (
                     <Row key={item.id || index}>
                       <Cell>{item.account}</Cell>
                       <Cell>{item.memo || '-'}</Cell>
@@ -83,7 +85,8 @@ export function TaskDetail(props: Props) {
       );
     }
 
-    if (isReverseJournalEntryTask(task)) {
+    // Use type guard and explicitly check proposedAction exists
+    if (isReverseJournalEntryTask(task) && task.proposedAction) {
       return (
         <div className="mt-4 p-4 border border-gray-200 rounded-lg">
           <h4 className="font-semibold text-lg mb-3">Reverse Journal Entry</h4>

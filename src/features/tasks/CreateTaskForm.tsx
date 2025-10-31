@@ -165,8 +165,8 @@ export function CreateTaskForm({ onClose, onSubmit, isSubmitting = false }: Crea
           
           <Select
             label="Type"
-            selectedKey={formData.type}
-            onSelectionChange={(key) => handleChange('type', key as string)}
+            key={formData.type}
+            onChange={(value) => handleChange('type', value as string)}
             errorMessage={errors.type}
             isRequired
           >

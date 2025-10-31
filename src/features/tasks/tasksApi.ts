@@ -25,14 +25,14 @@ export const tasksApi = createApi({
     createTask: builder.mutation<Task, { title: string; description: string; type: TaskType }>({
       queryFn: async (taskData) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
-        
+        const createdAt = new Date().toISOString()
         const newTask: Task = {
           id: `task-${Date.now()}`,
           title: taskData.title,
           description: taskData.description,
           type: taskData.type,
           status: TaskStatus.PENDING_RUN,
-          createdAt: new Date().toISOString(),
+          createdAt: createdAt,
         };
 
         tasks = [...tasks, newTask];
