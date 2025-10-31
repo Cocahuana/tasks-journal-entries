@@ -27,8 +27,9 @@ export const tasksApi = createApi({
       queryFn: async (taskData) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         const createdAt = new Date().toISOString()
+        const dateOfTodaysTask = Date.now();
         const newTask: Task = {
-          id: `task-${Date.now()}`,
+          id: `task-${dateOfTodaysTask}`,
           title: taskData.title,
           description: taskData.description,
           type: taskData.type,
