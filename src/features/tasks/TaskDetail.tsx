@@ -2,7 +2,7 @@
 import type { Task } from '../../types';
 import { TaskStatus } from '../../types';
 import { Close } from "flowbite-react-icons/outline";
-import { Table, TableHeader, TableBody, Row, Cell, Column } from '../../components/ui';
+import { Table, TableHeader, TableBody, Row, Cell, Column, Button } from '../../components/ui';
 import { useRunTaskMutation, useCompleteTaskMutation } from './tasksApi';
 import { useCreateJournalEntryMutation, useDeleteJournalEntryMutation, useGetJournalEntriesQuery } from '../../store/api/journalEntriesApi';
 import { calculateTotals, formatCurrency, isPostJournalEntryTask, isReverseJournalEntryTask, canExecuteAction } from './taskHelpers';
@@ -213,13 +213,14 @@ export function TaskDetail(props: Props) {
 
           {showRunButton && (
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <button
-                onClick={handleRunTask}
-                disabled={isRunning}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+              <Button
+                onPress={handleRunTask}
+                isDisabled={isRunning}
+                variant="primary"
+                size="md"
               >
                 {isRunning ? 'Running Task...' : 'Run Task to Generate Action'}
-              </button>
+              </Button>
               <p className="text-sm text-gray-600 mt-2">
                 Run this task to generate the proposed action that you can then execute.
               </p>
@@ -228,13 +229,14 @@ export function TaskDetail(props: Props) {
 
           {showExecuteButton && (
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <button
-                onClick={handleExecuteAction}
-                disabled={shouldDisableExecuteButton}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              <Button
+                onPress={handleExecuteAction}
+                isDisabled={shouldDisableExecuteButton}
+                variant="primary"
+                size="md"
               >
                 {isExecuting ? 'Executing Action...' : 'Execute Action'}
-              </button>
+              </Button>
               {!canExecuteReversalAction() ? (
                 <p className="text-sm text-red-600 mt-2">
                   ⚠️ Cannot execute: The journal entry does not exist in the system. It may have been deleted already.

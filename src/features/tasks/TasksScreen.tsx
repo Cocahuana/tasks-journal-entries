@@ -41,6 +41,20 @@ export function TasksScreen() {
     handleSplitterBehavior(!!selectedTask || isCreatingTask);
   }, [selectedTask, isCreatingTask]);
 
+  // Sync selectedTask with updated task data from the query
+  useEffect(() => {
+    if (selectedTask) {
+      const updatedTask = tasks.find((t) => t.id === selectedTask.id);
+      if (updatedTask) {
+        // Update selectedTask with the latest data
+        setSelectedTask(updatedTask);
+      } else {
+        // Task was deleted, close the panel
+        setSelectedTask(null);
+      }
+    }
+  }, [tasks, selectedTask?.id]);
+
   const handleRunTask = async (taskId: string) => {
     try {
       await runTask(taskId).unwrap();
