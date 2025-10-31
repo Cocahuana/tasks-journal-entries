@@ -6,11 +6,13 @@ import { Button, EmptyState } from "../../components/ui";
 import { TaskTable } from "./TaskTable";
 import {
   useGetTasksQuery,
+  useCreateTaskMutation,
   useRunTaskMutation,
   useDeleteTaskMutation,
 } from "./tasksApi";
-import type { Task } from "../../types";
+import type { Task, TaskType as TaskTypeEnum } from "../../types";
 import { TaskDetail } from "./TaskDetail";
+import { CreateTaskForm } from "./CreateTaskForm";
 
 export function TasksScreen() {
   const { data: tasks = [], isLoading } = useGetTasksQuery(undefined, {
@@ -18,24 +20,26 @@ export function TasksScreen() {
   });
   const [runTask] = useRunTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
+  const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
+  
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [tableFlex, setTableFlex] = useState(1);
   const [detailFlex, setDetailFlex] = useState(0);
-const handleSplitterBehavior = (isResizing: boolean) => {
-  // if no task is selected, left-pane should be full size in width
-  if (!isResizing) {
-    setTableFlex(1);
-    setDetailFlex(0);
-  } else {
-    // if a task is selected, right-pane should be full width 
-    // // but if the user drags the splitter, they can adjust the width of both panes
-    setTableFlex(0);
-    setDetailFlex(1);
-  }
-};
-useEffect(() => {
-  handleSplitterBehavior(!!selectedTask);
-}, [selectedTask]);
+
+  const handleSplitterBehavior = (isResizing: boolean) => {
+    if (!isResizing) {
+      setTableFlex(1);
+      setDetailFlex(0);
+    } else {
+      setTableFlex(0.5);
+      setDetailFlex(0.5);
+    }
+  };
+
+  useEffect(() => {
+    handleSplitterBehavior(!!selectedTask || isCreatingTask);
+  }, [selectedTask, isCreatingTask]);
 
   const handleRunTask = async (taskId: string) => {
     try {
@@ -56,17 +60,30 @@ useEffect(() => {
   const handleViewTask = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId);
     if (task) {
-      setSelectedTask(task);    
+      setSelectedTask(task);
+      setIsCreatingTask(false);
     }
   };
 
   const handleClosePanel = () => {
-    setSelectedTask(null);  
+    setSelectedTask(null);
+    setIsCreatingTask(false);
   };
 
   const handleCreateTask = () => {
-    console.log("Create task clicked");
-    // TODO: Implement create task logic
+    setIsCreatingTask(true);
+    setSelectedTask(null);
+  };
+
+  const handleSubmitTask = async (taskData: { title: string; description: string; type: TaskTypeEnum }) => {
+    try {
+      await createTask(taskData).unwrap();
+      // Close the form after successful submission
+      setIsCreatingTask(false);
+      // The task will automatically appear in the list due to cache invalidation
+    } catch (error) {
+      console.error("Failed to create task:", error);
+    }
   };
 
   if (isLoading) {
@@ -77,15 +94,24 @@ useEffect(() => {
     );
   }
 
-const emptyStateMessage = (
-<EmptyState
-    title="No tasks found"
-    description="Create your first task to automate journal entry posting and reversals"
-    action={<Button onPress={handleCreateTask}>Create Task</Button>}
-  />
-);
+  const emptyStateMessage = (
+    <EmptyState
+      title="No tasks found"
+      description="Create your first task to automate journal entry posting and reversals"
+      action={<Button onPress={handleCreateTask}>Create Task</Button>}
+    />
+  );
 
-
+  const showRightPanel = selectedTask || isCreatingTask;
+  const rightPanelContent = selectedTask ? (
+    <TaskDetail task={selectedTask} handleClosePanel={handleClosePanel} />
+  ) : isCreatingTask ? (
+    <CreateTaskForm 
+      onClose={handleClosePanel} 
+      onSubmit={handleSubmitTask}
+      isSubmitting={isCreating}
+    />
+  ) : null;
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -104,31 +130,28 @@ const emptyStateMessage = (
         }
       />
       <PageContent>
-        {tasks.length > 0 ? (
-         <ReflexContainer orientation="vertical">
-          <ReflexElement className="left-pane" flex={tableFlex} minSize={10}>
-            <TaskTable
-              tasks={tasks}
-              onRunTask={handleRunTask}
-              onDeleteTask={handleDeleteTask}
-              onViewTask={handleViewTask}
-            />
-          </ReflexElement>
+        {tasks.length > 0 || isCreatingTask ? (
+          <ReflexContainer orientation="vertical">
+            <ReflexElement className="left-pane" flex={tableFlex} minSize={100}>
+              <TaskTable
+                tasks={tasks}
+                onRunTask={handleRunTask}
+                onDeleteTask={handleDeleteTask}
+                onViewTask={handleViewTask}
+              />
+            </ReflexElement>
 
-          <ReflexSplitter className="cursor-col-resize" />
+            <ReflexSplitter className="cursor-col-resize" />
 
-          <ReflexElement
-            className="right-pane"
-            flex={detailFlex}
-            minSize={selectedTask ? 260 : 0}
-            maxSize={selectedTask ? 800 : 0}
-            
-          >
-            {selectedTask && (
-              <TaskDetail task={selectedTask} handleClosePanel={handleClosePanel} />
-            )}
-          </ReflexElement>
-        </ReflexContainer>
+            <ReflexElement
+              className="right-pane"
+              flex={showRightPanel ? detailFlex : 0}
+              minSize={showRightPanel ? 200 : 0}
+              maxSize={showRightPanel ? 1600 : 0}
+            >
+              {rightPanelContent}
+            </ReflexElement>
+          </ReflexContainer>
         ) : (
           emptyStateMessage
         )}

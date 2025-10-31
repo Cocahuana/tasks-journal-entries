@@ -22,6 +22,24 @@ export const tasksApi = createApi({
       },
       providesTags: ["Task"],
     }),
+    createTask: builder.mutation<Task, { title: string; description: string; type: TaskType }>({
+      queryFn: async (taskData) => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        
+        const newTask: Task = {
+          id: `task-${Date.now()}`,
+          title: taskData.title,
+          description: taskData.description,
+          type: taskData.type,
+          status: TaskStatus.PENDING_RUN,
+          createdAt: new Date().toISOString(),
+        };
+
+        tasks = [...tasks, newTask];
+        return { data: newTask };
+      },
+      invalidatesTags: ["Task"],
+    }),
 
     runTask: builder.mutation<Task, string>({
       queryFn: async (taskId) => {
@@ -101,5 +119,5 @@ export const initializeTasks = (initialTasks: Task[]) => {
   tasks = [...initialTasks];
 };
 
-export const { useGetTasksQuery, useRunTaskMutation, useDeleteTaskMutation } =
+export const { useGetTasksQuery, useRunTaskMutation, useDeleteTaskMutation, useCreateTaskMutation } =
   tasksApi;
