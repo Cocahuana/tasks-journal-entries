@@ -10,7 +10,7 @@ import { SAMPLE_PROPOSED_ENTRY } from "./mockData";
 import { getJournalEntries } from "../../store/api/journalEntriesApi";
 
 let tasks: Task[] = [];
-
+const CREATED_DATE = new Date().toISOString()
 export const tasksApi = createApi({
   reducerPath: "tasksApi",
   baseQuery: fakeBaseQuery(),
@@ -26,7 +26,6 @@ export const tasksApi = createApi({
     createTask: builder.mutation<Task, { title: string; description: string; type: TaskType }>({
       queryFn: async (taskData) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
-        const createdAt = new Date().toISOString()
         const dateOfTodaysTask = Date.now();
         const newTask: Task = {
           id: `task-${dateOfTodaysTask}`,
@@ -34,7 +33,7 @@ export const tasksApi = createApi({
           description: taskData.description,
           type: taskData.type,
           status: TaskStatus.PENDING_RUN,
-          createdAt: createdAt,
+          createdAt: CREATED_DATE,
         };
 
         tasks = [...tasks, newTask];
@@ -69,7 +68,7 @@ export const tasksApi = createApi({
               ...currentTask,
               proposedAction: SAMPLE_PROPOSED_ENTRY,
               status: TaskStatus.PENDING_ACTION,
-              lastRunAt: new Date().toISOString(),
+              lastRunAt: CREATED_DATE,
             } as PostJournalEntryTask;
 
             tasks = [
@@ -93,7 +92,7 @@ export const tasksApi = createApi({
                 journalEntryId,
               },
               status: TaskStatus.PENDING_ACTION,
-              lastRunAt: new Date().toISOString(),
+              lastRunAt: CREATED_DATE,
             } as ReverseJournalEntryTask;
 
             tasks = [
@@ -106,7 +105,7 @@ export const tasksApi = createApi({
             const completedTask = {
               ...currentTask,
               status: TaskStatus.COMPLETED,
-              lastRunAt: new Date().toISOString(),
+              lastRunAt: CREATED_DATE,
             };
 
             tasks = [
