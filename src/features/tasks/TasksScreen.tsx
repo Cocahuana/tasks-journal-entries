@@ -78,7 +78,7 @@ export function TasksScreen() {
       />
       <PageContent>
         {tasks.length > 0 ? (
-          <ReflexContainer orientation="vertical">
+          <ReflexContainer orientation="vertical" className="h-full w-full min-w-0">
             <ReflexElement className="left-pane" minSize={400}>
               <TaskTable
                 tasks={tasks}
